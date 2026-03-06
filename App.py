@@ -1,18 +1,20 @@
-import streamlit as st    
-import joblib           
-vectorizer = joblib.load("vectorizer.pkl")
-model = joblib.load("model.pkl")
-
-st.title("Fake News & Malicious Message Detector")
-
-user_text = st.text_area("Enter news / message:")
-
+import streamlit as st
+import pickle
+with open("nb.pkl", "rb") as f:
+    model = pickle.load(f)
+with open("vectorizer.pkl", "rb") as f:
+    vectorizer = pickle.load(f)
+st.title("📢 Fake News / Malicious Message Detector")
+st.write("Just type a message below and click **Check**. The app will automatically decide if it's Safe or Malicious.")
+user_input = st.text_area("Enter your message:", "")
 if st.button("Check"):
-    if user_text.strip():
-        X = vectorizer.transform([user_text])
-        pred = model.predict(X)[0]                         
-        proba = model.predict_proba(X)[0].max()            
-        st.write(f"Prediction: **{pred}**")
-        st.write(f"Confidence: {proba*100:.2f}%")
+    if user_input.strip() == "":
+        st.warning("Please enter a message to classify.")
     else:
-        st.write("Please enter some text.")
+        input_tfidf = vectorizer.transform([user_input])
+        prediction = model.predict(input_tfidf)[0]
+        confidence = model.predict_proba(input_tfidf)[0].max()
+        if prediction == 0:
+            st.success(f"✅ Safe Message (HAM) — Confidence: {confidence*100:.2f}%")
+        else:
+            st.error(f"⚠️ Malicious/Spam Message — Confidence: {confidence*100:.2f}%")
