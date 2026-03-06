@@ -1,7 +1,5 @@
-import streamlit as st    # web UI library
-import joblib             # to load saved model
-
-# 1) Load the trained vectorizer and model
+import streamlit as st    
+import joblib           
 vectorizer = joblib.load("vectorizer.pkl")
 model = joblib.load("model.pkl")
 
@@ -11,14 +9,9 @@ user_text = st.text_area("Enter news / message:")
 
 if st.button("Check"):
     if user_text.strip():
-        # 2) Convert user text to TF-IDF vector
         X = vectorizer.transform([user_text])
-
-        # 3) Predict label and probability
-        pred = model.predict(X)[0]                         # 'ham' or 'spam'
-        proba = model.predict_proba(X)[0].max()            # highest class probability
-
-        # 4) Show result
+        pred = model.predict(X)[0]                         
+        proba = model.predict_proba(X)[0].max()            
         st.write(f"Prediction: **{pred}**")
         st.write(f"Confidence: {proba*100:.2f}%")
     else:
