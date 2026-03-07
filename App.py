@@ -1,20 +1,29 @@
 import streamlit as st
-import pickle
-with open("nb.pkl", "rb") as f:
-    model = pickle.load(f)
-with open("vectorizer.pkl", "rb") as f:
-    vectorizer = pickle.load(f)
+import joblib
+log_reg = joblib.load("log_reg.pkl")
+nb = joblib.load("nb.pkl")
+vectorizer = joblib.load("vectorizer.pkl")
+
 st.title("📢 Fake News / Malicious Message Detector")
-st.write("Just type a message below and click **Check**. The app will automatically decide if it's Safe or Malicious.")
-user_input = st.text_area("Enter your message:", "")
+
+user_input = st.text_area("Enter your message:")
+
+model_choice = st.selectbox("Choose a model:", ["Logistic Regression", "Naive Bayes"])
+
 if st.button("Check"):
-    if user_input.strip() == "":
-        st.warning("Please enter a message to classify.")
-    else:
-        input_tfidf = vectorizer.transform([user_input])
-        prediction = model.predict(input_tfidf)[0]
-        confidence = model.predict_proba(input_tfidf)[0].max()
-        if prediction == 0:
-            st.success(f"✅ Safe Message (HAM) — Confidence: {confidence*100:.2f}%")
+    if user_input.strip():
+        X = vectorizer.transform([user_input])
+
+        if model_choice == "Logistic Regression":
+            pred = log_reg.predict(X)[0]
+            proba = log_reg.predict_proba(X)[0].max()
         else:
-            st.error(f"⚠️ Malicious/Spam Message — Confidence: {confidence*100:.2f}%")
+            pred = nb.predict(X)[0]
+            proba = nb.predict_proba(X)[0].max()
+
+        if pred == 0:
+            st.success(f"✅ Safe Message — Confidence: {proba*100:.2f}%")
+        else:
+            st.error(f"⚠️ Spam/Malicious — Confidence: {proba*100:.2f}%")
+    else:
+        st.warning("Please enter some text.")
