@@ -6,24 +6,28 @@ vectorizer = joblib.load("vectorizer.pkl")
 
 st.title("📢 Fake News / Malicious Message Detector")
 
-user_input = st.text_area("Enter your message:")
+st.write("Type a message below and click **Check**. The app will decide if it's Safe or Malicious using both models.")
 
-model_choice = st.selectbox("Choose a model:", ["Logistic Regression", "Naive Bayes"])
+user_input = st.text_area("Enter your message:")
 
 if st.button("Check"):
     if user_input.strip():
         X = vectorizer.transform([user_input])
+        pred_lr = log_reg.predict(X)[0]
+        proba_lr = log_reg.predict_proba(X)[0].max()
 
-        if model_choice == "Logistic Regression":
-            pred = log_reg.predict(X)[0]
-            proba = log_reg.predict_proba(X)[0].max()
-        else:
-            pred = nb.predict(X)[0]
-            proba = nb.predict_proba(X)[0].max()
+        pred_nb = nb.predict(X)[0]
+        proba_nb = nb.predict_proba(X)[0].max()
 
-        if pred == 0:
-            st.success(f"✅ Safe Message — Confidence: {proba*100:.2f}%")
+        if pred_lr == pred_nb:
+            final_pred = pred_lr
+            final_proba = (proba_lr + proba_nb) / 2
         else:
-            st.error(f"⚠️ Spam/Malicious — Confidence: {proba*100:.2f}%")
+            final_pred = pred_lr
+            final_proba = proba_lr
+        if final_pred == 0:
+            st.success(f"✅ Safe Message — Confidence: {final_proba*100:.2f}% (combined models)")
+        else:
+            st.error(f"⚠️ Spam/Malicious — Confidence: {final_proba*100:.2f}% (combined models)")
     else:
         st.warning("Please enter some text.")
