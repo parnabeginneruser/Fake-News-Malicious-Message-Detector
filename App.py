@@ -1,7 +1,6 @@
 import streamlit as st
 import joblib
 
-# Load models and vectorizer
 log_reg = joblib.load("log_reg.pkl")
 nb = joblib.load("nb.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
